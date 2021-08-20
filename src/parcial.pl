@@ -56,19 +56,22 @@ regaloCaro(libro(cienciaFiccion,rayBradbury)).
 regaloCaro(libro(novela,_)).
 regaloCaro(cerveza(artesanal,_)).
 
-buenRegalo(Persona,Regalo):-
-    regalo(_,Regalo,Persona,_),
-    gusta(Persona,Regalo).
+buenRegalo(Regalado,Regalo):-
+    regalo(_,Regalo,Regalado,_),
+    gusta(Regalado,Regalo).
 
+buenRegalo(Regalador,Regalado,Regalo):-
+    regalo(Regalador,Regalo,Regalado,_),
+    gusta(Regalado,Regalo).
 
-habilRegalador(Persona):-
-    nacio(Persona,_),
-    forall(regalo(Persona,Regalo,RecibeRegalo,_),buenRegalo(RecibeRegalo,Regalo)),
-    not(dosRegalosParecidosDifAnio(Persona)).
+habilRegalador(Regalador):-
+    nacio(Regalador,_),
+    forall(regalo(Regalador,Regalo,RecibeRegalo,_),buenRegalo(RecibeRegalo,Regalo)),
+    not(dosRegalosParecidosDifAnio(Regalador)).
 
-dosRegalosParecidosDifAnio(Persona):-
-    regalo(Persona,Regalo1,_,Anio1),
-    regalo(Persona,Regalo2,_,Anio2),
+dosRegalosParecidosDifAnio(Regalador):-
+    regalo(Regalador,Regalo1,_,Anio1),
+    regalo(Regalador,Regalo2,_,Anio2),
     Anio1\=Anio2,
     regalosParecidos(Regalo1,Regalo2).
 
@@ -78,8 +81,23 @@ regalosParecidos(producto(Tematica),producto(Tematica)).
 
 monotematico(Persona):-
     nacio(Persona,_),
-    forall(,(buenRegalo(Persona,Regalo),dosRegalosParecidosDifAnio(Persona)))
+    forall((buenRegalo(Persona,Regalo1),buenRegalo(Persona,Regalo2),Regalo1\=Regalo2),regalosParecidos(Regalo1,Regalo2)). %revisar a
 
+regaloNinja(Regalador,Regalo):-
+    regalo(Regalador,Regalo,_,_),
+    gusta(Regalador,Regalo).
+
+regaladorNinja(Regalador):-
+    findall(BuenRegalo,buenRegalo(Regalador,_,BuenRegalo),ListaBuenRegalo),
+    findall(RegaloNinja,regaloNinja(Regalador,RegaloNinja),ListaRegaloNinja),
+    length(ListaBuenRegalo, CantidadBuenosRegalos),
+    length(ListaRegaloNinja, CantidadRegalosNinja),
+    between(0, CantidadRegalosNinja, CantidadBuenosRegalos).
+
+
+    
+    
+    
 
 :- begin_tests_con(parcial, []).
 
@@ -111,7 +129,12 @@ test(noEsbuenRegaloParaFecheQuilmesRubia):-
     not(buenRegalo(feche,cerveza(quilmes,rubia))).
 test(ayeEsHabilRegaladora):-
     habilRegalador(aye).
-
+test(fecheEsMonotematico):-
+    monotematico(feche).
+test(juanEsRegaladorNinja):-
+    regaladorNinja(juan).
+test(fecheNoEsRegaladorNinja):-
+    not(regaladorNinja(feche)).
 
 
 :- end_tests(parcial).
