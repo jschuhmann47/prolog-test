@@ -33,12 +33,52 @@ poderRegalarleA((Dia,Mes,Anio),DadoraRegalo,RecibeRegalo):-
     regalo(DadoraRegalo,_,_,_),
     nacio(RecibeRegalo,_),
     not(regalo(DadoraRegalo,_,_,Anio)),
-    not(cumplioAnios(RecibeRegalo,(Dia,Mes,Anio))),
-    not(regalo(_,_,RecibeRegalo,Anio)).
+    not(regalo(_,_,RecibeRegalo,Anio)),
+    not(cumplioAnios(RecibeRegalo,(Dia,Mes,Anio))).
+    
 
 cumplioAnios(Pesona,(Dia,Mes,Anio)):-
     nacio(Persona,(DiaCumple,MesCumple,_)),
     pasoCumpleanios((Dia,Mes),(DiaCumple,MesCumple)).
+
+
+gusta(aye,cerveza(heineken,rubia)).
+gusta(aye,producto(harryPotter)).
+gusta(juan,libro(fantasia,_)).
+gusta(juan,libro(cienciaFiccion,_)).
+gusta(juan,Regalo):-
+    regaloCaro(Regalo).
+gusta(feche,producto(monsterHunter)).
+gusta(feche,libro(Genero,terryPratchet)):-
+    not(regaloCaro(libro(Genero,terryPratchet))).
+
+regaloCaro(libro(cienciaFiccion,rayBradbury)).
+regaloCaro(libro(novela,_)).
+regaloCaro(cerveza(artesanal,_)).
+
+buenRegalo(Persona,Regalo):-
+    regalo(_,Regalo,Persona,_),
+    gusta(Persona,Regalo).
+
+
+habilRegalador(Persona):-
+    nacio(Persona,_),
+    forall(regalo(Persona,Regalo,RecibeRegalo,_),buenRegalo(RecibeRegalo,Regalo)),
+    not(dosRegalosParecidosDifAnio(Persona)).
+
+dosRegalosParecidosDifAnio(Persona):-
+    regalo(Persona,Regalo1,_,Anio1),
+    regalo(Persona,Regalo2,_,Anio2),
+    Anio1\=Anio2,
+    regalosParecidos(Regalo1,Regalo2).
+
+regalosParecidos(cerveza(_,_),cerveza(_,_)).
+regalosParecidos(libro(Genero,_),libro(Genero,_)).
+regalosParecidos(producto(Tematica),producto(Tematica)).
+
+monotematico(Persona):-
+    nacio(Persona,_),
+    forall(,(buenRegalo(Persona,Regalo),dosRegalosParecidosDifAnio(Persona)))
 
 
 :- begin_tests_con(parcial, []).
@@ -56,6 +96,22 @@ test(noPasoCumpleFeche):-
 test(paraEl_5Enero2021_ayeLePuedeRegalarAJuan):-
     poderRegalarleA((5,1,2021),aye,juan).
 test(paraEl_10Enero2020_nadieLePuedeRegalarAJuan):-
-    not(poderRegalarleA((5,1,2021),_,juan)).
+    not(poderRegalarleA((5,1,2020),_,juan)).
+test(paraJuanEsBuenRegaloLaCervezaArtesanalRubia):-
+    buenRegalo(juan,cerveza(artesanal, rubia)).
+test(paraJuanNoEsBuenRegaloLibroDeTerrorMaryShelly):-
+    not(buenRegalo(juan,(terror,maryShelly))).
+test(buenRegaloParaAyeEsProductosDeHarryPotter):-
+    buenRegalo(aye,producto(harryPotter)).
+test(noEsbuenRegaloParaAyeLibroDeTerrorMaryShelly):-
+    not(buenRegalo(aye,(terror,maryShelly))).
+test(buenRegaloParaFecheEsLibroFantasiaTerry):-
+    buenRegalo(feche,libro(fantasia,terryPratchet)).
+test(noEsbuenRegaloParaFecheQuilmesRubia):-
+    not(buenRegalo(feche,cerveza(quilmes,rubia))).
+test(ayeEsHabilRegaladora):-
+    habilRegalador(aye).
+
+
 
 :- end_tests(parcial).
