@@ -37,7 +37,7 @@ poderRegalarleA((Dia,Mes,Anio),DadoraRegalo,RecibeRegalo):-
     not(cumplioAnios(RecibeRegalo,(Dia,Mes,Anio))).
     
 
-cumplioAnios(Pesona,(Dia,Mes,Anio)):-
+cumplioAnios(Persona,(Dia,Mes,Anio)):- %si la persona, a la fecha que uno ingresa, ya cumplio años o no
     nacio(Persona,(DiaCumple,MesCumple,_)),
     pasoCumpleanios((Dia,Mes),(DiaCumple,MesCumple)).
 
@@ -56,20 +56,16 @@ regaloCaro(libro(cienciaFiccion,rayBradbury)).
 regaloCaro(libro(novela,_)).
 regaloCaro(cerveza(artesanal,_)).
 
-buenRegalo(Regalado,Regalo):-
-    regalo(_,Regalo,Regalado,_),
-    gusta(Regalado,Regalo).
-
 buenRegalo(Regalador,Regalado,Regalo):-
     regalo(Regalador,Regalo,Regalado,_),
     gusta(Regalado,Regalo).
 
 habilRegalador(Regalador):-
     nacio(Regalador,_),
-    forall(regalo(Regalador,Regalo,RecibeRegalo,_),buenRegalo(RecibeRegalo,Regalo)),
-    not(dosRegalosParecidosDifAnio(Regalador)).
+    forall(regalo(Regalador,Regalo,RecibeRegalo,_),buenRegalo(Regalador,RecibeRegalo,Regalo)),
+    not(dosRegalosParecidosEnDistintoAnio(Regalador)).
 
-dosRegalosParecidosDifAnio(Regalador):-
+dosRegalosParecidosEnDistintoAnio(Regalador):-
     regalo(Regalador,Regalo1,_,Anio1),
     regalo(Regalador,Regalo2,_,Anio2),
     Anio1\=Anio2,
@@ -79,13 +75,13 @@ regalosParecidos(cerveza(_,_),cerveza(_,_)).
 regalosParecidos(libro(Genero,_),libro(Genero,_)).
 regalosParecidos(producto(Tematica),producto(Tematica)).
 
-monotematico(Persona):-
-    nacio(Persona,_),
-    forall(dosBuenRegalosDistintos(Persona,Regalo1,Regalo2),regalosParecidos(Regalo1,Regalo2)).
+monotematico(Regalado):-
+    nacio(Regalado,_),
+    forall(dosBuenRegalosDistintos(Regalado,Regalo1,Regalo2),regalosParecidos(Regalo1,Regalo2)). %si tiene menos de dos regalos da verdadero, por la regla del condicional F->? da V
 
 dosBuenRegalosDistintos(Persona,Regalo1,Regalo2):-
-    buenRegalo(Persona,Regalo1),
-    buenRegalo(Persona,Regalo2),
+    buenRegalo(_,Persona,Regalo1),
+    buenRegalo(_,Persona,Regalo2),
     Regalo1\=Regalo2.
 
 regaloNinja(Regalador,Regalo):-
@@ -93,13 +89,18 @@ regaloNinja(Regalador,Regalo):-
     gusta(Regalador,Regalo).
 
 regaladorNinja(Regalador):-
-    findall(BuenRegalo,buenRegalo(Regalador,_,BuenRegalo),ListaBuenRegalo),
-    findall(RegaloNinja,regaloNinja(Regalador,RegaloNinja),ListaRegaloNinja),
-    length(ListaBuenRegalo, CantidadBuenosRegalos),
-    length(ListaRegaloNinja, CantidadRegalosNinja),
+    regalo(Regalador,_,_,_),
+    cantidadBuenosRegalos(Regalador,CantidadBuenosRegalos),
+    cantidadRegalosNinja(Regalador,CantidadRegalosNinja),
     between(0, CantidadRegalosNinja, CantidadBuenosRegalos).
 
+cantidadBuenosRegalos(Regalador,CantidadBuenosRegalos):-
+    findall(BuenRegalo,buenRegalo(Regalador,_,BuenRegalo),ListaBuenRegalo),
+    length(ListaBuenRegalo, CantidadBuenosRegalos).
 
+cantidadRegalosNinja(Regalador,CantidadRegalosNinja):-
+    findall(RegaloNinja,regaloNinja(Regalador,RegaloNinja),ListaRegaloNinja),
+    length(ListaRegaloNinja, CantidadRegalosNinja).
     
     
     
@@ -121,23 +122,23 @@ test(paraEl_5Enero2021_ayeLePuedeRegalarAJuan):-
 test(paraEl_10Enero2020_nadieLePuedeRegalarAJuan):-
     not(poderRegalarleA((5,1,2020),_,juan)).
 test(paraJuanEsBuenRegaloLaCervezaArtesanalRubia):-
-    buenRegalo(juan,cerveza(artesanal, rubia)).
+    buenRegalo(_,juan,cerveza(artesanal, rubia)).
 test(paraJuanNoEsBuenRegaloLibroDeTerrorMaryShelly):-
-    not(buenRegalo(juan,(terror,maryShelly))).
+    not(buenRegalo(_,juan,(terror,maryShelly))).
 test(buenRegaloParaAyeEsProductosDeHarryPotter):-
-    buenRegalo(aye,producto(harryPotter)).
+    buenRegalo(_,aye,producto(harryPotter)).
 test(noEsbuenRegaloParaAyeLibroDeTerrorMaryShelly):-
-    not(buenRegalo(aye,(terror,maryShelly))).
+    not(buenRegalo(_,aye,(terror,maryShelly))).
 test(buenRegaloParaFecheEsLibroFantasiaTerry):-
-    buenRegalo(feche,libro(fantasia,terryPratchet)).
+    buenRegalo(_,feche,libro(fantasia,terryPratchet)).
 test(noEsbuenRegaloParaFecheQuilmesRubia):-
-    not(buenRegalo(feche,cerveza(quilmes,rubia))).
+    not(buenRegalo(_,feche,cerveza(quilmes,rubia))).
 test(ayeEsHabilRegaladora):-
     habilRegalador(aye).
-test(fecheEsMonotematico):-
+test(fecheEsMonotematicoPorTenerDosRegalosParecidos):-
     monotematico(feche).
 test(ayeEsMonotematicaPorTenerUnRegalo):-
-    monotematico(aye). %(F->V/F es V)
+    monotematico(aye). %(F->(V/F)  asi que el condicional da V)
 test(juanNoEsMonotematico):-
     not(monotematico(juan)).
 test(juanEsRegaladorNinja):-
