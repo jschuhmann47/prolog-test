@@ -5,14 +5,14 @@ nacio(aye,(26,3,1992)).
 nacio(feche,(22,12,1995)).
 
 %fechaAntesQueOtra(fechaanterior,fecha)
-fechaAntesQueOtra((_,_,Anio1),(_,_,Anio2)):-
-    between(0, Anio2, Anio1),
-    Anio1\=Anio2.
-fechaAntesQueOtra((_,Mes1,Anio),(_,Mes2,Anio)):-
-    between(0, Mes2, Mes1),
-    Mes1\=Mes2.
-fechaAntesQueOtra((Dia1,Mes,Anio),(Dia2,Mes,Anio)):-
-    between(0, Dia2, Dia).
+fechaAntesQueOtra((_,_,AnioAnterior),(_,_,Anio)):-
+    between(0, Anio, AnioAnterior),
+    AnioAnterior\=Anio.
+fechaAntesQueOtra((_,MesAnterior,Anio),(_,Mes,Anio)):-
+    between(0, Mes, MesAnterior),
+    MesAnterior\=Mes.
+fechaAntesQueOtra((DiaAnterior,Mes,Anio),(Dia,Mes,Anio)):-
+    between(0, Dia, DiaAnterior).
     
 %pasoCumpleanios(Fecha,Cumpleanios).
 pasoCumpleanios((Dia,Mes),(DiaCumpleanios,MesCumpleanios)):-
@@ -37,7 +37,7 @@ poderRegalarleA((Dia,Mes,Anio),DadoraRegalo,RecibeRegalo):-
     not(cumplioAnios(RecibeRegalo,(Dia,Mes,Anio))).
     
 
-cumplioAnios(Persona,(Dia,Mes,Anio)):- %si la persona, a la fecha que uno ingresa, ya cumplio años o no
+cumplioAnios(Persona,(Dia,Mes,_)):- %si la persona, a la fecha que uno ingresa, ya cumplio años o no
     nacio(Persona,(DiaCumple,MesCumple,_)),
     pasoCumpleanios((Dia,Mes),(DiaCumple,MesCumple)).
 
