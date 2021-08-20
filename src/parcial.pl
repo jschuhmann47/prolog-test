@@ -81,7 +81,12 @@ regalosParecidos(producto(Tematica),producto(Tematica)).
 
 monotematico(Persona):-
     nacio(Persona,_),
-    forall((buenRegalo(Persona,Regalo1),buenRegalo(Persona,Regalo2),Regalo1\=Regalo2),regalosParecidos(Regalo1,Regalo2)). %revisar a
+    forall(dosBuenRegalosDistintos(Persona,Regalo1,Regalo2),regalosParecidos(Regalo1,Regalo2)).
+
+dosBuenRegalosDistintos(Persona,Regalo1,Regalo2):-
+    buenRegalo(Persona,Regalo1),
+    buenRegalo(Persona,Regalo2),
+    Regalo1\=Regalo2.
 
 regaloNinja(Regalador,Regalo):-
     regalo(Regalador,Regalo,_,_),
@@ -131,6 +136,10 @@ test(ayeEsHabilRegaladora):-
     habilRegalador(aye).
 test(fecheEsMonotematico):-
     monotematico(feche).
+test(ayeEsMonotematicaPorTenerUnRegalo):-
+    monotematico(aye). %(F->V/F es V)
+test(juanNoEsMonotematico):-
+    not(monotematico(juan)).
 test(juanEsRegaladorNinja):-
     regaladorNinja(juan).
 test(fecheNoEsRegaladorNinja):-
